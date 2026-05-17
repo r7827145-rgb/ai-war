@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 
 const Map = lazy(() => import("./LiveMapInner").then((m) => ({ default: m.LiveMapInner })));
 
@@ -16,18 +16,24 @@ export interface LiveMapProps {
 
 export function LiveMap(props: LiveMapProps) {
   const height = props.height ?? "60vh";
-  return (
-    <Suspense
-      fallback={
-        <div
-          className="grid place-items-center rounded-2xl border border-border bg-secondary/40 text-xs text-muted-foreground"
-          style={{ height }}
-        >
-          Loading map…
-        </div>
-      }
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const fallback = (
+    <div
+      className="grid place-items-center rounded-2xl border border-border bg-secondary/40 text-xs text-muted-foreground"
+      style={{ height }}
     >
-      <Map {...props} />
+      Loading map…
+    </div>
+  );
+
+  return (
+    <Suspense fallback={fallback}>
+      {isMounted ? <Map {...props} /> : fallback}
     </Suspense>
   );
 }
